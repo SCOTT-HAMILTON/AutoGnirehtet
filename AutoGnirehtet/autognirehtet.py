@@ -7,10 +7,12 @@ def make_child():
     return pexpect.spawn('gnirehtet', args=["run"],
             encoding='utf-8', logfile=sys.stdout, timeout=None)
 
-def clean_quit():
+def clean_quit(sig=None, frame=None):
     print("[log] Quitting...")
     child.kill(signal.SIGINT)
     exit(0)
+
+signal.signal(signal.SIGINT, clean_quit)
 
 def respawn():
     print("[log] Restarting...")
