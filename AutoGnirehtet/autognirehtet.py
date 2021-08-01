@@ -1,10 +1,11 @@
 import pexpect
 import signal
 import sys
+from time import sleep
 
 def make_child():
     return pexpect.spawn('gnirehtet', args=["run"],
-        encoding='utf-8', logfile=sys.stdout, timeout=None)
+            encoding='utf-8', logfile=sys.stdout, timeout=None)
 
 def clean_quit():
     print("[log] Quitting...")
@@ -17,10 +18,10 @@ def respawn():
     child = make_child()
 
 patterns = {
-    "ERROR Main:":"quit",
-    "disconnected":"disconnected",
-    "connected":"connected"
-}
+        "ERROR Main:":"quit",
+        "disconnected":"disconnected",
+        "connected":"connected"
+        }
 restarting = False
 while True:
     child = make_child()
@@ -43,7 +44,9 @@ while True:
             print("[log] Restarted")
             restarting = False
         elif action == "quit":
+            print("[log] Restarting...")
+            sleep(1)
+            restarting = True
             child.kill(signal.SIGINT)
-            if not restarting:
-                exit(0)
+            break
 
