@@ -7,7 +7,7 @@ setup(
     include_package_data=True,
     py_modules = [ 'autognirehtet' ],
 
-    install_requires=['pexpect'],
+    install_requires=['pexpect', 'pure-python-adb'],
 
     entry_points='''
         [console_scripts]
