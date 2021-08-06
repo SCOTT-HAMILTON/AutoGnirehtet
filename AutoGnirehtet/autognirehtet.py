@@ -31,37 +31,37 @@ class DeviceHandler:
                 "disconnected":"disconnected",
                 "connected":"connected"
         }
-        self.child = self.make_child()
         self.running = True
-        disconnected = True
-        lastConnectedTime = time()
         while self.running:
-            if disconnected:
-                disconnectedDuration = time()-lastConnectedTime
-                # print(f"Duration: {disconnectedDuration}")
-                if disconnectedDuration > 3:
+            self.child = self.make_child()
+            startTime = time()
+            gotFirstConnection = False
+            while self.running:
+                disconnectedDuration = time()-startTime
+                if not gotFirstConnection and disconnectedDuration > 30:
                     self.clean_quit()
                     break
-            print("expecting...")
-            matched = None
-            try:
-                matched = self.child.expect(list(patterns.keys()), timeout=1)
-            except pexpect.exceptions.EOF:
-                self.child.kill(signal.SIGINT)
-                self.clean_quit()
-                break
-            except pexpect.exceptions.TIMEOUT:
-                continue
-            action = list(patterns.values())[matched]
-            if action == "disconnected" or action == "quit":
-                disconnected = True
-                lastConnectedTime = time()
-                # self.clean_quit()
-                # break
-            elif action == "connected":
-                disconnected = False
-                print("[log] Connected")
-
+                print("expecting...")
+                matched = None
+                try:
+                    matched = self.child.expect(list(patterns.keys()), timeout=1)
+                except pexpect.exceptions.EOF:
+                    self.clean_quit()
+                    break
+                except pexpect.exceptions.TIMEOUT:
+                    continue
+                action = list(patterns.values())[matched]
+                if action == "disconnected" or action == "quit":
+                    if not gotFirstConnection and disconnectedDuration <= 30:
+                        print("[log] Restarting...")
+                        self.child.kill(signal.SIGINT)
+                        sleep(1)
+                        break
+                    else:
+                        self.clean_quit()
+                elif action == "connected":
+                    gotFirstConnection = True
+                    print("[log] Connected")
 
 class MainLoop:
     def __init__(self):
